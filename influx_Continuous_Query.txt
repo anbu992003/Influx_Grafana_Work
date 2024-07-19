@@ -1,0 +1,54 @@
+Continuous Query, shard duration & Retention policy
+=======================================================
+
+CREATE CONTINUOUS QUERY "cq_cpu_10m" ON "my_database"
+BEGIN
+  SELECT mean("usage") INTO "cpu_10m" FROM "cpu" GROUP BY time(10m)
+END;
+
+
+
+CREATE CONTINUOUS QUERY "cq_cpu_hourly" ON "my_database"
+BEGIN
+  SELECT mean("usage") AS "mean_usage", min("usage") AS "min_usage", max("usage") AS "max_usage"
+  INTO "cpu_hourly"
+  FROM "cpu"
+  GROUP BY time(1h), "host"
+END;
+
+
+SHOW CONTINUOUS QUERIES;
+
+
+DROP CONTINUOUS QUERY "cq_name" ON "database_name";
+
+
+
+
+CREATE CONTINUOUS QUERY "cq_1h_mean" ON "my_database"
+BEGIN
+  SELECT mean("value") INTO "downsampled_rp"."1h_mean_value" FROM "cpu_usage"
+  GROUP BY time(1h), "host"
+END
+
+
+CREATE CONTINUOUS QUERY "cq_hourly_avg_temp" ON "my_database"
+BEGIN
+  SELECT mean("value") INTO "hourly_avg_temperature" FROM "temperature"
+  GROUP BY time(1h), "location"
+END
+
+
+CREATE RETENTION POLICY "custom_rp" ON "my_database" DURATION 7d REPLICATION 1 SHARD DURATION 1h
+
+
+The execution interval of a Continuous Query in InfluxDB 1.x is determined by the GROUP BY time() clause. The CQ runs at the specified interval and aligns with shard group durations defined by the retention policy. By creating custom retention policies, you can have finer control over the execution intervals and data retention characteristics.
+
+USE my_database
+SHOW RETENTION POLICIES ON my_database
+
+CREATE RETENTION POLICY "custom_rp" ON "my_database" DURATION 7d REPLICATION 1 SHARD DURATION 1h
+ALTER RETENTION POLICY "custom_rp" ON "my_database" DURATION 14d REPLICATION 2 SHARD DURATION 2h
+
+
+

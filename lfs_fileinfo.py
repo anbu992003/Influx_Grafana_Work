@@ -58,6 +58,19 @@ influx -host localhost -port 8086 -database 'exampleDB'
 
 
 
+# Parse a complete file each interval
+[[inputs.file]]
+  ## Files to parse each interval.  Accept standard unix glob matching rules,
+  ## as well as ** to match recursive files and directories.
+  files = ["/tmp/metrics.out"]
+  data_format = "influx"
+  
+[[inputs.tail]]
+  files = ["/path/to/datafile.txt"]
+  from_beginning = true
+  name_override = "custom_data"
+  data_format = "influx"
+
 
 anbu992003@LAPTOP-ODISB5A1:~$ nohup python3 fileinfo.py 2>/dev/null &
 [1] 136
