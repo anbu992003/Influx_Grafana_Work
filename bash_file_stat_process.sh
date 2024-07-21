@@ -248,22 +248,27 @@ filesystem_stat,type="directory",permissions="555",userpermission="5",grouppermi
 filesystem_stat,type="directory",permissions="555",userpermission="5",grouppermission="5",otherpermission="5",user="anbu992003",group="anbu992003",file="/mnt/c/Program\ Files/",writable="0",depth="4",filetype="/mnt/c/Program Files/",modified_time="1718344160",accessed_time="1721562710" size=512 1721562710936535426
 
 
+grep 'type="directory"' success.txt | grep -oP 'file=".*?[^\\]"'|sed 's/\"$//' | awk -F'file=\"' '{  gsub(/[[:punct:]]/, "\\\\&", $2);  print $2}'| xargs grep -f - success.txt | grep -i 'type="regular file"' | awk -F'size=' '{sum += $2} END {print sum}'
+
 #!/bin/bash
 
+##>>>EScape special characters
 # Extract directories from success.txt
-directories=$(grep 'type="directory"' success.txt | awk -F'file=' '{print $2}' | tr -d '"' | tr -d ',')
+#directories=$(grep 'type="directory"' success.txt  | awk -F'file=' '{print $2}' | tr -d '"' | tr -d ',')
+directories=$(grep 'type="directory"' success.txt | grep -oP 'file=".*?[^\\]"'|sed 's/\"$//' | awk -F'file=\"' '{  gsub(/[[:punct:]]/, "\\\\&", $2);  print $2}' )
+#gsub(/\\\\/, "\\", $2);
 
 # Iterate through each directory
 for dir in $directories; do
     # Calculate the sum of sizes of regular files within the directory
-    total_size=$(grep "file=\"$dir" success.txt | grep 'type="regular file"' | awk -F'size=' '{sum += $2} END {print sum}')
+    total_size=$(grep -iE "file=\"$dir" success.txt | grep -i 'type="regular file"' | awk -F'size=' '{sum += $2} END {print sum}')
     
     # Print the directory path and total size
     echo "Directory: $dir, Total Size: $total_size"
 done
 
 
-
+grep -i directory success.txt | grep -oP 'file=".*?[^\\]"'|sed 's/\"$//'
 
 
 #!/bin/bash
