@@ -19,6 +19,7 @@ print(f"Last modified: {stat_result.st_mtime}")
 print(f"Last status change: {stat_result.st_ctime}")
 
 
+filetpe
 path
 user
 group
