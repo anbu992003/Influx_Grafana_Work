@@ -1,0 +1,80 @@
+#include <SPI.h>
+#include <MFRC522.h>
+
+// Define pins
+#define RST_PIN 9  // Reset pin
+#define SS_PIN 10  // Slave Select pin
+
+MFRC522 rfid(SS_PIN, RST_PIN);  // Create an instance of the MFRC522 class
+
+void setup() {
+    Serial.begin(9600);  // Start Serial communication
+    SPI.begin();         // Initialize SPI bus
+    rfid.PCD_Init();     // Initialize the RFID module
+    Serial.println("Place your RFID tag near the reader...");
+}
+
+void loop() {
+    // Look for new RFID cards
+    if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) {
+        return;  // No card detected
+    }
+
+    Serial.println("RFID tag detected!");
+    Serial.print("UID: ");
+    for (byte i = 0; i < rfid.uid.size; i++) {
+        Serial.print(rfid.uid.uidByte[i], HEX);  // Print UID in hexadecimal
+        Serial.print(" ");
+    }
+    Serial.println();
+
+    // Select the card
+    if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+        // Read all sectors
+        MFRC522::StatusCode status;
+        byte buffer[18];  // Buffer to store data
+        byte bufferSize = sizeof(buffer);
+
+        for (byte sector = 0; sector < 16; sector++) {
+            byte block = sector * 4;  // Each sector has 4 blocks
+            Serial.print("Sector ");
+            Serial.print(sector);
+            Serial.println(":");
+
+            for (byte i = 0; i < 4; i++) {  // Loop through blocks in the sector
+                byte blockAddr = block + i;
+                Serial.print("  Block ");
+                Serial.print(blockAddr);
+                Serial.print(": ");
+
+                // Authenticate and read the block
+                status = rfid.PCD_Authenticate(
+                    MFRC522::PICC_CMD_MF_AUTH_KEY_A, blockAddr,
+                    &(rfid.MIFARE_Key()), &(rfid.uid));
+                if (status != MFRC522::STATUS_OK) {
+                    Serial.print("Authentication failed: ");
+                    Serial.println(rfid.GetStatusCodeName(status));
+                    continue;
+                }
+
+                status = rfid.MIFARE_Read(blockAddr, buffer, &bufferSize);
+                if (status != MFRC522::STATUS_OK) {
+                    Serial.print("Read failed: ");
+                    Serial.println(rfid.GetStatusCodeName(status));
+                    continue;
+                }
+
+                // Print block data
+                for (byte j = 0; j < 16; j++) {
+                    Serial.print(buffer[j], HEX);
+                    Serial.print(" ");
+                }
+                Serial.println();
+            }
+        }
+    }
+
+    // Halt PICC
+    rfid.PICC_HaltA();
+    rfid.PCD_StopCrypto1();
+}
