@@ -1,0 +1,42 @@
+# **Patent Pillar Charter - 2025**
+## **Innovation Horizontal**
+
+### **1. Introduction**
+Innovation is the cornerstone of our company’s success, and intellectual property (IP) plays a crucial role in protecting and leveraging our technological advancements. The **Patent Pillar** within the **Innovation Horizontal** is dedicated to fostering a culture of patent generation, streamlining the patent filing process, and ensuring alignment with the company’s strategic goals.
+
+### **2. Vision & Mission**
+#### **Vision:**
+To establish a strong, sustainable, and strategically aligned patent portfolio that drives competitive advantage and fosters a culture of continuous innovation.
+
+#### **Mission:**
+- Encourage and enable employees to innovate and protect their ideas through patents.
+- Enhance the efficiency of the patent filing process.
+- Align patent activities with business and technology roadmaps.
+- Leverage patents for industry collaborations, licensing opportunities, and risk mitigation.
+
+### **3. Key Objectives for 2025**
+1. **Increase Patent Filings:** Achieve a 20% increase in patent applications compared to the previous year.
+2. **Improve Patent Quality:** Focus on high-value patents that align with strategic business areas.
+3. **Streamline the Patent Process:** Reduce the time from invention disclosure to patent filing by 30%.
+4. **Enhance Employee Engagement:** Conduct at least 10 innovation workshops and patentathons.
+5. **Collaboration & Partnerships:** Establish partnerships with universities, research institutes, and patent attorneys to enhance IP generation.
+6. **Monetization & Licensing Strategy:** Identify at least three potential licensing or commercialization opportunities.
+
+### **4. Strategic Initiatives**
+- **Patent Awareness Programs:** Conduct periodic training sessions to educate employees on patentability criteria, filing processes, and IP benefits.
+- **Innovation Sprints & Patentathons:** Organize focused brainstorming sessions to generate patentable ideas.
+- **Fast-Track Filing Mechanism:** Develop an internal review board to expedite high-impact patent submissions.
+- **AI-Assisted Prior Art Search:** Implement AI tools to assist in identifying novel inventions and avoiding duplication.
+- **Cross-Team Collaboration:** Facilitate collaboration between R&D, legal, and business units to identify patentable innovations.
+
+### **5. Governance & Metrics**
+- **Patent Review Committee:** A dedicated team of senior engineers, legal experts, and business leaders to review, prioritize, and approve patent filings.
+- **Key Performance Indicators (KPIs):**
+  - Number of patents filed and granted.
+  - Time taken from idea submission to filing.
+  - Number of employees engaged in patent activities.
+  - Revenue generated from patent licensing.
+
+### **6. Conclusion**
+The **Patent Pillar** will play a pivotal role in strengthening our IP portfolio and positioning the company as a leader in innovation. By implementing structured initiatives and fostering an innovation-driven culture, we will drive sustained technological advancements and business success in 2025 and beyond.
+
