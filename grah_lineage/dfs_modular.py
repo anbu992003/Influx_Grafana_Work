@@ -8,6 +8,7 @@ table_data = """
 src_Server	src_datbase	src_feedpath	src_feed	src_pde	dst_Server	dst_datbase	dst_feedpath	dst_feed	dst_pde
 Abc	def	ghi	jkl	mno	pqr	stu	vwx	yza	bcd
 cde	fgh	ijk	lmn	opq	rst	uvw	xyz	abc	def
+Abc	def	ghi	jkl	mno	pqr	ftg	vwx	yza	ttt
 """
 
 # Read the data into a pandas DataFrame
@@ -15,6 +16,14 @@ data = StringIO(table_data)
 df = pd.read_csv(data, sep='\t')
 #print(df.columns)
 #exit(-1)
+
+# Function to find leaf nodes for a given node
+def find_rogue_nodes(G, start_node, out_degree = 10):
+    rogue_nodes = []
+    for node in nx.descendants(G, start_node):
+        if G.out_degree(node) > out_degree:
+            rogue_nodes.append(node)
+    return rogue_nodes
 
 # Function to find leaf nodes for a given node
 def find_leaf_nodes(G, start_node):
@@ -35,7 +44,8 @@ def create_graph(df):
 
 # Function to identify orphan nodes (nodes with no predecessors)
 def identify_orphans(G):
-    orphans = [node for node in G.nodes if G.in_degree(node) == 0]
+    #orphans = [node for node in G.nodes if G.in_degree(node) == 0]
+    orphans = [node for node in G.nodes if G.out_degree(node) == 0]
     return orphans
 
 # Function to identify cycles in the graph
@@ -73,10 +83,16 @@ print("Orphans:", orphans)
 cycles = identify_cycles(graph)
 print("Cycles:", cycles)
 
+
+
 # Print lineage using DFS for a given src_pde
 src_pde = 'mno'  # Example src_pde
 lineage = print_lineage_dfs(graph, src_pde)
 print("Lineage for src_pde 'mno':", lineage)
+
+#Identify Rogue nodes
+rogue_nodes = find_rogue_nodes(graph,'Abc|def|ghi|jkl|mno',1)
+print("Rogue Node:", cycles)
 
 # Visualize lineage
 visualize_lineage(graph)
