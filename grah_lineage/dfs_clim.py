@@ -15,6 +15,19 @@ class Digraph:
 
     def get_starting_nodes(self):
         return [node for node in self.in_degree if self.in_degree[node] == 0]
+        
+    def iterative_dfs(graph, start):
+        stack = [(start, f"{start}", 0)]  # (node, path, depth)
+        results = []
+
+        while stack:
+            node, path, depth = stack.pop()
+            results.append((path, depth))
+
+            for neighbor in graph.adj_list.get(node, []):
+                stack.append((neighbor, f"{path} -> {neighbor}", depth + 1))
+
+        return results
 
     def dfs(self, node, path, depth, results):
         results.append((path, depth))
