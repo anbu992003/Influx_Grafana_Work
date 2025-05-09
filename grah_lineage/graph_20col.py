@@ -21,20 +21,31 @@ df = pd.DataFrame(data)
 
 # Function to process lineage
 def process_lineage(full_lineage, top_root):
-    lineage_list = full_lineage.split("|")  # Split by pipe symbol
+    lineage_list = full_lineage.split("|")  # Split lineage by pipe symbol
     model_list = [entry for entry in lineage_list if re.search(r'm\d{4,}', entry)]  # Find models
-
+    
     results = []
 
+    # Store indices
+    #indices = list(range(1, len(lineage_list) + 1))
+    #results.append(f"Indices: {' | '.join(map(str, indices))}")
+
     if not model_list:  # No models found, store original lineage
-        results.append(full_lineage)
+        results.append(f"{full_lineage}| Indices: 1-{len(lineage_list)+1}")
     else:
-        #results.append(f"{top_root}|{'|'.join(lineage_list[:lineage_list.index(model_list[0]) + 1])}")  # First level to first model
-        results.append(f"{'|'.join(lineage_list[:lineage_list.index(model_list[0]) + 1])}")  # First level to first model
-        for i in range(len(model_list) - 1):  # Between models
-            results.append(f"{model_list[i]}|{model_list[i+1]}")
-        #results.append(f"{model_list[-1]}|{'|'.join(lineage_list[lineage_list.index(model_list[-1]):])}")  # Last model to last level
-        results.append(f"{'|'.join(lineage_list[lineage_list.index(model_list[-1]):])}")  # Last model to last level
+        # First level to first model
+        first_model_idx = lineage_list.index(model_list[0]) + 1
+        results.append(f"{top_root}|{'|'.join(lineage_list[:first_model_idx])} | Indices: 1-{first_model_idx}")
+        
+        # Model lineage transformations
+        for i in range(len(model_list) - 1):
+            start_idx = lineage_list.index(model_list[i]) + 1
+            end_idx = lineage_list.index(model_list[i + 1]) + 1
+            results.append(f"{model_list[i]}|{model_list[i + 1]} | Indices: {start_idx}-{end_idx}")
+        
+        # Last model to last level
+        last_model_idx = lineage_list.index(model_list[-1]) + 1
+        results.append(f"{model_list[-1]}|{'|'.join(lineage_list[last_model_idx:])} | Indices: {last_model_idx}-{len(lineage_list)}")
 
     return results
 
