@@ -28,13 +28,13 @@ def process_lineage(full_lineage, top_root):
 
     if not model_list:  # No models found, store original lineage
         results.append(full_lineage)
-    elif len(model_list) == 1:  # Single model found
-        results.append(f"{top_root}|{model_list[0]}")
-        results.append(f"{model_list[0]}|{lineage_list[-1]}")
-    else:  # Multiple models found
-        results.append(f"{top_root}|{model_list[0]}")
-        results.append(f"{model_list[0]}|{model_list[-1]}")
-        results.append(f"{model_list[-1]}|{lineage_list[-1]}")
+    else:
+        #results.append(f"{top_root}|{'|'.join(lineage_list[:lineage_list.index(model_list[0]) + 1])}")  # First level to first model
+        results.append(f"{'|'.join(lineage_list[:lineage_list.index(model_list[0]) + 1])}")  # First level to first model
+        for i in range(len(model_list) - 1):  # Between models
+            results.append(f"{model_list[i]}|{model_list[i+1]}")
+        #results.append(f"{model_list[-1]}|{'|'.join(lineage_list[lineage_list.index(model_list[-1]):])}")  # Last model to last level
+        results.append(f"{'|'.join(lineage_list[lineage_list.index(model_list[-1]):])}")  # Last model to last level
 
     return results
 
