@@ -1,0 +1,46 @@
+You are an expert Python developer with deep knowledge of abstract syntax trees (AST), graph theory, and data flow analysis. Your task is to write a complete, well-structured Python program that analyzes a Python 3 project codebase to build a data flow Directed Acyclic Graph (DAG) across all files in the project. The program should be efficient, handle large codebases, and output the DAG in a readable file format.
+
+### Program Requirements:
+- **Input**: The program should accept a single command-line argument: a path to a directory containing the Python 3 project codebase (e.g., `python script.py /path/to/project`).
+- **File Processing**:
+  - Recursively traverse the given directory and its subdirectories to find all files with a `.py` extension.
+  - Skip non-Python files, hidden files/directories (e.g., those starting with '.'), and directories like `__pycache__` or `venv`.
+  - For each `.py` file, read its content and parse it using Python's built-in `ast` module (specifically `ast.parse()`). Handle parsing errors gracefully (e.g., log the error and skip the file if it's not valid Python syntax).
+- **Building Per-File Data Flow DAG**:
+  - For each parsed file, traverse the AST to construct a data flow DAG.
+  - **Nodes**: Represent key elements in the data flow, such as:
+    - Variable definitions (e.g., assignments like `x = 5`, function parameters, global variables).
+    - Variable uses (e.g., in expressions like `y = x + 1`, function calls, returns).
+    - Statements that affect data flow (e.g., function definitions, if/else blocks, loops—but abstract loops to avoid cycles if needed).
+    - Label each node with details like: file name, line number, variable name (if applicable), and type (e.g., 'def', 'use', 'assign').
+  - **Edges**: Represent data dependencies, such as:
+    - From a definition node to a use node (e.g., if `x` is defined and then used in another statement).
+    - Intra-function flows (e.g., parameter to return value).
+    - Control flow influences on data (e.g., from an if-condition to branches, but ensure the graph remains acyclic by treating branches as parallel paths).
+    - Use unique identifiers for nodes (e.g., 'file1:line10:var_x_def') to avoid conflicts.
+  - Use the `networkx` library to represent the DAG (import it as needed; assume it's installed). Ensure the graph is directed and acyclic—raise an error or log if cycles are detected (though data flow should ideally be acyclic).
+  - Implement a custom AST visitor class (inheriting from `ast.NodeVisitor`) to traverse the tree and build the graph. Track scopes (e.g., global, local, class) to handle variable shadowing correctly.
+- **Connecting DAGs Across Files**:
+  - After building individual DAGs, merge them into a single global DAG.
+  - Detect inter-file dependencies via imports:
+    - Parse import statements (e.g., `import module`, `from module import func`).
+    - For function calls or variable accesses that refer to imported elements, add edges from the calling file's nodes to the imported file's corresponding nodes (e.g., if file A calls `moduleB.func()`, connect A's call node to B's func definition node).
+    - Handle relative imports and package structures (use `ast` to resolve import paths where possible).
+    - Track global variables or shared state that might flow between modules.
+  - If a dependency cycle is detected across files (e.g., circular imports), log a warning but proceed by adding the edges (networkx can handle it, but note it's no longer strictly acyclic).
+- **Output**:
+  - Write the final combined DAG (nodes and edges) to a file named `data_flow_dag.gexf` (or another graph format like JSON or Graphviz DOT for visualization) in the current working directory.
+  - For GEXF format, use `networkx.write_gexf()` to export.
+  - Include node attributes (e.g., file, line, type) and edge attributes (e.g., dependency type like 'data_def_to_use' or 'inter_file_call').
+  - If JSON is chosen as fallback, structure it as: `{"nodes": [{"id": "...", "attributes": {...}}, ...], "edges": [{"source": "...", "target": "...", "attributes": {...}}, ...]}`.
+- **Additional Features**:
+  - Use logging (via `logging` module) for progress (e.g., "Processing file X", "Found Y nodes"), errors, and warnings.
+  - Make the program modular: Separate functions for file discovery, parsing, per-file DAG building, merging, and exporting.
+  - Handle edge cases: Empty directories, single-file projects, syntax errors in files, large files (use `ast` efficiently), and Python 3-specific features (e.g., type hints, async).
+  - Ensure the program runs on Python 3.8+ and requires only standard libraries plus `networkx` (document if installation is needed: `pip install networkx`).
+- **Performance and Best Practices**:
+  - Optimize for large codebases: Process files in parallel if possible (using `multiprocessing`), but keep it simple if not necessary.
+  - Write clean, commented code with type hints and docstrings.
+  - Include a main guard (`if __name__ == "__main__":`) and use `argparse` for command-line parsing.
+
+Output the complete Python code for this program. Do not include any explanations outside the code—only the code itself.
