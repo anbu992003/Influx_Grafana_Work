@@ -1,0 +1,13 @@
+Notes on capabilities & assumptions (kept brief):
+
+Detects file reads via pd.read_* and open(..., 'r'); writes via to_* and open(..., 'w'/'a').
+
+Detects DB reads via pd.read_sql(sql, con=...) (extracts table from FROM ...) and writes via df.to_sql(name, con=...), plus raw cursor.execute("INSERT INTO ..."/"UPDATE ...").
+
+Resolves simple string constants, f-strings with constant parts, os.path.join of constants, and string concatenation.
+
+Tracks column-level flows for df['new']=expr, apply, merge, and basic groupby().agg() (as aggregate node).
+
+Builds per-script DAG, then connects scripts when file paths or db/table keys match.
+
+If networkx is available, warns when cycles are detected; otherwise proceeds without cycle check.

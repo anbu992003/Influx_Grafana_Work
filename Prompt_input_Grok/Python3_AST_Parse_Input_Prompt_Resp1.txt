@@ -1,0 +1,36 @@
+You are an expert Python developer specializing in static code analysis using the Abstract Syntax Tree (AST) module. Your task is to create a complete, standalone Python 3 program that fulfills the following requirements for analyzing an ETL (Extract, Transform, Load) codebase. The codebase consists of Python 3 scripts that source inputs from local/server files or database tables, perform transformations, and write outputs to files or database tables. Intermediate results may also be written to files or tables.
+
+The program must:
+
+Accept a command-line argument for a directory path containing the Python 3 project codebase. Traverse this path recursively to process each Python file (.py) one by one using the ast module to parse and analyze the code.
+For input read operations in each script:
+Detect file read operations (e.g., using open(), pandas.read_csv(), pd.read_excel(), etc.) and capture the filepath and filename.
+Detect database read operations (e.g., SQL queries like SELECT statements executed via libraries such as sqlite3, psycopg2, sqlalchemy, pandas.read_sql(), etc.) and capture the database name (if specified in connection strings) and table name from the query.
+Analyze the transformation logic at the field, column, or attribute level:
+Track variables representing data (e.g., DataFrames, lists, dictionaries) from inputs.
+Identify operations like column selections, renames, calculations, joins, aggregations (e.g., via pandas operations like df['column'] = ..., df.merge(), df.groupby(), etc.).
+Capture how individual fields/columns are transformed, including source columns, operations applied, and resulting columns.
+For output write operations:
+Detect file write operations (e.g., to_csv(), to_excel(), open() with 'w' mode, etc.) and capture the filepath and filename.
+Detect database write/update operations (e.g., INSERT/UPDATE SQL queries, pandas.to_sql(), etc.) and capture the database name and table name.
+For each Python script, construct a Directed Acyclic Graph (DAG) representing the data flow at the column level:
+Nodes represent data elements:
+For files: filepath, filename, field name (e.g., a CSV column).
+For database tables: database name, table name, column name.
+Edges represent data movement or transformation from one node to another (e.g., from input column A in file X to transformed column B in intermediate DataFrame, to output column C in table Y).
+After processing all scripts, connect the DAGs across scripts by matching outputs from one script (files/tables written) to inputs in another script (files/tables read), forming a unified project-wide DAG.
+Output the final unified DAG to a file (e.g., in JSON format) with:
+A list of nodes, each with attributes like type (file or db), identifiers (filepath/filename/field or db/table/column), and script origin.
+A list of edges, each as a pair (source_node_id, target_node_id) with optional labels for transformations (e.g., "renamed from X to Y" or "sum aggregation").
+Implementation guidelines:
+
+Use argparse for command-line input (e.g., python analyzer.py --path /etl/codebase).
+Handle common ETL libraries like pandas, SQLAlchemy, etc., by visiting AST nodes for function calls, assignments, and expressions.
+Create a custom AST visitor class (inheriting from ast.NodeVisitor) to traverse and extract relevant information.
+For SQL queries, parse strings if they are literals (using simple string matching or a library like sqlparse if needed, but prefer built-in methods).
+Track data lineage by following variable usages and assignments.
+Use a graph library like networkx to build and manipulate the DAG.
+Handle edge cases: relative paths, dynamic strings (e.g., via f-strings—evaluate safely if possible), multiple inputs/outputs per script, no-ops.
+Ensure the program is robust, with logging for errors (e.g., unparseable files) and verbose output options.
+Do not execute any code from the codebase; perform static analysis only.
+Provide the complete Python code for this program, including imports, classes, functions, and main execution block. Test it mentally on a simple example ETL script before finalizing.

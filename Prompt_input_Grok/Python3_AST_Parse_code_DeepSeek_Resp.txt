@@ -1,0 +1,47 @@
+Key Features
+AST Parsing:
+
+Uses Python's ast module to parse Python files
+
+Custom ETLAnalyzer class extends ast.NodeVisitor to traverse the AST
+
+Input/Output Detection:
+
+Identifies file reads (CSV, Excel, Parquet, JSON, open())
+
+Detects database operations (read_sql, to_sql)
+
+Tracks file writes (to_csv, to_excel, etc.)
+
+Transformation Tracking:
+
+Captures column assignments and transformations
+
+Tracks merges, groupbys, and other DataFrame operations
+
+Maintains a symbol table for basic variable tracking
+
+DAG Construction:
+
+Builds per-file DAGs with nodes and edges
+
+Merges DAGs from multiple files
+
+Uses standardized node naming (file:// and db:// URIs)
+
+Output:
+
+Saves final DAG to JSON file
+
+Provides logging for debugging
+
+Limitations
+Static analysis can't track dynamic paths/variables perfectly
+
+SQL parsing is very basic (only extracts table names)
+
+Doesn't execute code or follow imports
+
+Limited support for complex transformations
+
+The program should work well for typical ETL codebases that follow common patterns with pandas and SQL operations. For more complex cases, the analyzer would need to be enhanced.

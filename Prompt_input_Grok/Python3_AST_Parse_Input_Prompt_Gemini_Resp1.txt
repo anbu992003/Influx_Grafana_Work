@@ -1,0 +1,164 @@
+Project: ETL Codebase Data Lineage Analyzer
+Overall Objective
+Develop a Python 3 application that leverages the ast module to statically analyze an enterprise ETL codebase. The goal is to construct a detailed Directed Acyclic Graph (DAG) representing the column-level data flow within and across Python scripts. This DAG will meticulously map data sources (files, database tables), transformations, and data sinks (output files, database tables).
+
+Detailed Requirements & Implementation Steps
+1. Codebase Traversal and File-by-File Processing
+Prompt: "Implement a module (e.g., code_scanner.py) that accepts a project_path as input. This module should recursively traverse all .py files within the specified project_path. For each Python file found, it must prepare the file content for AST parsing."
+
+Sub-Prompt A: File Filtering: "Ensure only valid Python 3 .py files are processed. Ignore hidden files, virtual environments, and common non-source directories (e.g., .git, __pycache__, venv)."
+
+Sub-Prompt B: File Loading: "For each identified Python file, read its content into a string variable, which will then be passed to the AST parser."
+
+2. AST Parsing and Node Visitor Implementation
+Prompt: "Create a custom AST Node Visitor class (e.g., EtlAstVisitor(ast.NodeVisitor)) that will systematically walk the AST of each Python script. This visitor will be responsible for identifying input, transformation, and output operations."
+
+Sub-Prompt A: AST Construction: "For each file content string, use ast.parse() to generate the Abstract Syntax Tree. Handle potential SyntaxError exceptions gracefully."
+
+Sub-Prompt B: Initializing Visitor State: "The visitor instance should maintain internal state to track context, such as current function being analyzed, variable assignments, and imported modules (especially pandas, sqlalchemy, custom database connectors)."
+
+3. Data Source Identification (Inputs)
+Prompt: "Within the EtlAstVisitor, implement methods to detect and capture all data read operations. This includes both file-based and database-based inputs."
+
+Sub-Prompt A: File Read Operations: "Identify common file reading patterns. Look for:
+
+Built-in open() calls (for text/binary files).
+
+pandas.read_csv(), pandas.read_excel(), pandas.read_json(), etc.
+
+Any custom functions or classes in the codebase that abstract file reading.
+
+Capture: The absolute filepath and filename of the input file."
+
+Sub-Prompt B: Database Read Operations: "Identify common database interaction patterns. Look for:
+
+cursor.execute() calls where the SQL query string can be extracted.
+
+pandas.read_sql(), pandas.read_sql_query(), pandas.read_sql_table().
+
+SQLAlchemy select() statements, Table object instantiations, or ORM queries.
+
+Any custom functions/classes that abstract database connections and queries.
+
+Capture: The database name (infer from connection strings or explicit arguments if possible, otherwise flag as generic 'DB') and table name (extract from SQL queries, Table objects, or function arguments)."
+
+Sub-Prompt C: Handling Dynamic Inputs: "Address challenges in identifying inputs where file paths or SQL queries are dynamically constructed (e.g., f-strings, variable concatenations). Consider basic string literal analysis or flagging dynamic inputs for manual review."
+
+4. Transformation Logic Identification (Field/Column/Attribute Level)
+Prompt: "Enhance the EtlAstVisitor to meticulously track data transformations at the individual field, column, or attribute level. This requires analyzing variable assignments, function calls, and operations performed on data structures (like Pandas DataFrames or SQL results)."
+
+Sub-Prompt A: Variable Tracking: "Track the lineage of variables. When a variable is assigned the result of an operation, understand which input columns contributed to it. For example, df['new_col'] = df['col1'] + df['col2'] should link new_col to col1 and col2."
+
+Sub-Prompt B: Pandas Transformations: "Specifically analyze Pandas DataFrame operations:
+
+Column selections: df[['colA', 'colB']]
+
+Column additions/modifications: df['new'] = ...
+
+Method calls: df.groupby(), df.merge(), df.apply(), df.fillna(), df.filter(), etc.
+
+Capture: The original column name(s) and the resulting column name(s) after the transformation. For complex transformations, categorize the type of operation (e.g., 'Aggregation', 'Join', 'Derivation')."
+
+Sub-Prompt C: SQL Transformations (within queries): "If SQL queries are identified (e.g., in cursor.execute() or read_sql()), perform rudimentary parsing of the SELECT clause to extract source columns and aliased/derived columns. This might involve regex or a simple SQL parser library if available."
+
+Sub-Prompt D: Generic Function Calls: "For any function call that takes a data structure as input and returns a modified one, attempt to infer column-level changes. If not possible, note the function call as a 'black-box' transformation affecting the entire data structure."
+
+Sub-Prompt E: Intermediate Results: "Detect cases where intermediate results (e.g., DataFrames, lists of records) are created and then used as input for subsequent transformations within the same script."
+
+5. Data Sink Identification (Outputs)
+Prompt: "Extend the EtlAstVisitor to capture all data write or update operations, similar to input identification."
+
+Sub-Prompt A: File Write Operations: "Identify common file writing patterns. Look for:
+
+Built-in open() calls with write modes ('w', 'a', 'wb').
+
+pandas.to_csv(), pandas.to_excel(), pandas.to_json(), etc.
+
+Any custom functions or classes that abstract file writing.
+
+Capture: The absolute filepath and filename of the output file."
+
+Sub-Prompt B: Database Write/Update Operations: "Identify common database write/update patterns. Look for:
+
+cursor.execute() calls involving INSERT, UPDATE, DELETE statements.
+
+pandas.to_sql().
+
+SQLAlchemy insert(), update(), delete() statements or ORM add(), commit() operations.
+
+Capture: The database name and table name being written to or updated."
+
+6. DAG Construction and Output
+Prompt: "Design and implement the logic to construct a DAG for each Python script and then connect these script-level DAGs into a cohesive, project-wide data flow DAG."
+
+Sub-Prompt A: Node Definition: "Define a standard node structure for the DAG. Each node must represent a column-level data entity and include the following attributes:
+
+type: 'file_field' or 'db_column'
+
+If type is 'file_field':
+
+filepath: Full path to the file.
+
+filename: Name of the file.
+
+field_name: The specific field/column name within the file.
+
+If type is 'db_column':
+
+database_name: Name of the database.
+
+table_name: Name of the table.
+
+column_name: The specific column name within the table.
+
+script_path: The path to the Python script where this node was identified (for inter-script linking)."
+
+Sub-Prompt B: Edge Definition: "Define an edge structure. Each edge represents data movement and connects a source node to a destination node.
+
+source_node_id: Unique identifier of the source node.
+
+destination_node_id: Unique identifier of the destination node.
+
+transformation_type: (Optional) A brief description of the transformation causing the movement (e.g., 'Copy', 'Derivation', 'Aggregation', 'Join')."
+
+Sub-Prompt C: Script-Level DAGs: "For each analyzed Python script, build a temporary DAG using a library like networkx. Connect input nodes to transformation nodes, and transformation nodes to output nodes within that script."
+
+Sub-Prompt D: Inter-Script DAG Connection: "After processing all scripts, iterate through the individual script DAGs. If an output node from Script A matches an input node of Script B (e.g., same file path/name and field, or same database/table/column), create an edge between these two nodes in a master project-level DAG."
+
+Challenge: Accurately matching intermediate files/tables used across scripts.
+
+Sub-Prompt E: DAG Output: "Write the final project-level DAG's nodes and edges to a file. Consider formats that are easily parsable and visualizable:
+
+JSON: A structured JSON file containing lists of nodes and edges with their attributes.
+
+Graphviz DOT format: To allow easy visualization using Graphviz tools.
+
+(Optional) CSV files for nodes and edges for simpler tabular analysis."
+
+Key Considerations & Advanced Challenges
+Dynamic Code: Handling exec(), eval(), or highly dynamic string-based SQL queries where column names or file paths are not literal strings in the AST. This might require runtime analysis or more sophisticated data flow analysis.
+
+External Configurations: If file paths, database credentials, or table names are loaded from external configuration files (e.g., YAML, INI, JSON), consider adding logic to parse these configurations to resolve dynamic paths/names.
+
+Aliasing and Renaming: Accurately track column renames (e.g., df.rename(columns={'old':'new'}), SQL AS clauses).
+
+Error Handling: Implement robust error handling for file I/O, AST parsing, and unexpected code patterns.
+
+Performance: For very large codebases, consider optimizing the traversal and parsing process.
+
+Abstraction Layers: Account for custom wrapper functions or classes that encapsulate common ETL operations. You may need to define rules for how to interpret these custom abstractions.
+
+Suggested Python Modules
+os, pathlib: For file system traversal.
+
+ast: The core module for parsing Python code.
+
+collections (e.g., defaultdict): Useful for building intermediate data structures.
+
+networkx: A powerful library for creating, manipulating, and studying graphs (DAGs).
+
+json: For outputting the DAG structure.
+
+(Optional) sqlparse: For more robust parsing of SQL queries if needed.
+
+This detailed prompt should provide a solid foundation for developing your ETL data lineage analyzer! Good luck! 🚀

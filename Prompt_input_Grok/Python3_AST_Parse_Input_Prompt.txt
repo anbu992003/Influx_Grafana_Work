@@ -1,0 +1,17 @@
+Context:
+Having enterprise python3 ETL codebase that either sources inputs from file in a local or server path or from tables in a database and does the transformation operations and write final results back to a different output file or a database table. It could possibly have intermediate transformation results that it writes to intermediate files or database table.
+
+Requirement to do:
+Create a detailed prompt for the below
+
+1.Need to create a python3 program to use AST to process a given path that contains python3 project codebase mentioned in the context above file by file 
+2. Based on the input file read operation capture filepath, filename (or) sql query to read database table capture the  database and table name 
+3. Based on the transformation logic implemented, capture it at the field, column or attribute level 
+4. Based on the output file write opertation capture filepath, filename (or) sql query to write or update database table capture the  database and table name
+5. create a DAG for the data flow for each python script file and connect the dags and write the dag nodes and edges to a file
+6. The data flow DAG is at the column level with each nodes represent and the edges represent the data movement from one node to another captured as part of the above mentioned parsing
+        1. if it is a file then file path name, file name, field name
+		2. if it is a database table then database name, table name,column name
+		
+		
+		
