@@ -1,0 +1,55 @@
+You are an expert Python developer specializing in static code analysis using the AST module. Your task is to write a complete, standalone Python 3 program that fulfills the following requirements based on analyzing an ETL (Extract, Transform, Load) codebase. The codebase consists of Python 3 scripts that source data from files (local or server paths) or database tables, perform transformations, and write outputs to files or database tables. There may also be intermediate writes to files or tables during transformations.
+
+Program Requirements:
+Input Handling:
+The program should accept a command-line argument: a path to a directory containing the Python 3 ETL project codebase (e.g., python analyzer.py /path/to/codebase).
+Recursively traverse the directory and process only .py files.
+AST-Based Parsing:
+For each .py file, use Python's ast module to parse the code into an Abstract Syntax Tree (AST).
+Traverse the AST to identify and capture:
+Input Read Operations:
+File reads: Look for common patterns like open(), pandas.read_csv(), pandas.read_excel(), pandas.read_parquet(), etc. Capture the full filepath/filename (resolve variables if possible, e.g., via constant propagation or simple value tracking).
+Database reads: Look for SQL queries in patterns like pandas.read_sql(), sqlalchemy queries, or raw DB connections (e.g., using psycopg2, sqlite3). Capture the database name (if specified) and table name from the query. Assume queries are strings or formatted strings; parse simple SELECT queries to extract table names (e.g., via regex or basic string parsing if needed).
+Transformation Logic:
+Capture transformations at the field/column/attribute level. Focus on data structures like Pandas DataFrames or dictionaries/lists.
+Track operations such as column assignments (e.g., df['new_col'] = df['col1'] + df['col2']), merges/joins (e.g., pd.merge()), applies (e.g., df['col'].apply(func)), groupbys, etc.
+Use AST visitors to track variable assignments, function calls, and attribute accesses. Maintain a flow graph to trace how columns/fields are derived from inputs or previous transformations.
+Handle intermediates: If data is written to a temporary file or table during processing, treat it as both an output (sink) and potential input (source) for later steps.
+Output Write Operations:
+File writes: Look for to_csv(), to_excel(), to_parquet(), open() with 'w' mode, etc. Capture filepath/filename.
+Database writes/updates: Look for to_sql(), INSERT/UPDATE queries via DB libraries. Capture database name and table name from the query or method arguments.
+DAG Construction:
+For each Python script (.py file), build a Directed Acyclic Graph (DAG) representing the data flow at the column/field level.
+Nodes: Represent data elements as strings in a standardized format:
+For files: file://<full_path>/<filename>:<field_name> (e.g., file:///etl/data/input.csv:customer_id). If field_name is unknown or all fields, use * (e.g., : *).
+For database tables: db://<database_name>/<table_name>:<column_name> (e.g., db://prod_db/customers:customer_id). Use * for all columns if applicable.
+Include intermediate nodes if transformations create new fields/columns without immediate write.
+Edges: Represent data movement or transformation as directed edges from source node to target node. Label edges with the transformation type if possible (e.g., "addition", "merge", "apply_func").
+Connecting DAGs Across Scripts:
+After processing all files, connect the per-script DAGs into a global DAG.
+Infer connections: If an output file/table from one script matches an input file/table in another script (by filepath or db/table name), add edges between their respective nodes.
+Handle potential cycles by logging warnings but assuming acyclic (ETL is typically DAG-like).
+Use a graph library like networkx (import it if needed; assume it's available or include a simple dict-based graph implementation if not).
+Output:
+Write the final connected DAG to a file named data_flow_dag.json in the current working directory.
+Format: JSON object with:
+"nodes": List of node strings.
+"edges": List of tuples or dicts like {"from": "source_node", "to": "target_node", "label": "transformation_type"}.
+If no DAG can be built (e.g., no ETL patterns found), output an empty DAG and log a message.
+Implementation Guidelines:
+AST Visitor Class: Extend ast.NodeVisitor to create custom visitors for:
+Identifying imports (e.g., pandas, sqlalchemy) to contextualize calls.
+Tracking variables: Use a symbol table or dict to track DataFrame variables and their columns (infer columns from reads or assignments).
+Handling function defs/calls: Focus on main script flow; recurse into functions if they contain ETL logic.
+Column Tracking:
+For reads: Infer columns from file extensions (e.g., CSV headers) but since it's static, assume columns are accessed via strings in code (e.g., df['col']) and track those.
+For transformations: Trace expressions like binops, calls, etc., to link source columns to derived ones.
+Limitations and Assumptions:
+Assume standard ETL libraries: pandas, sqlalchemy, common DB connectors. Skip unsupported libraries.
+Handle simple variable propagation (e.g., if filepath is a constant string); for complex cases (e.g., computed paths), log and skip.
+Parse SQL strings basically (e.g., extract FROM clause for tables); don't execute queries.
+Ignore non-ETL code; focus on data I/O and manipulations.
+Error Handling: Gracefully handle parse errors, invalid code, or missing info. Use logging for debug info.
+Dependencies: Use only standard libraries plus networkx for graphs (if not, use dicts/lists). No external installs.
+Performance: Optimize for medium-sized codebases; process files sequentially.
+Write the complete Python code for this program, including imports, classes, and main function. Ensure it's runnable as python analyzer.py <path>. Test it mentally on a simple ETL example.
